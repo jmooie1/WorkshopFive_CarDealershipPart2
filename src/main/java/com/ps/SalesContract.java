@@ -1,27 +1,30 @@
 package com.ps;
 
 public class SalesContract extends Contract {
-    private static final double SALES_TAX_RATE = 0.05;
-    private static final double RECORDING_FEE = 100.0;
-    private static final double PROCESSING_FEE_UNDER_10000 = 295.0;
-    private static final double PROCESSING_FEE_OVER_10000 = 495.0;
-    private static final double LOAN_INTEREST_RATE_UNDER_10000 = 0.0525;
-    private static final double LOAN_INTEREST_RATE_OVER_10000 = 0.0425;
-    private static final int LOAN_MONTHS_UNDER_10000 = 25;
-    private static final int LOAN_MONTHS_OVER_10000 = 48;
+    // Constant variables
+    private static final double salesTaxRate = 0.05;
+    private static final double recordingFee = 100.0;
+    private static final double processingFeeUnder10000 = 295.0;
+    private static final double processingFeeOver10000 = 495.0;
+    private static final double loanInterestRateUnder10000 = 0.0525;
+    private static final double loanInterestRateOver10000 = 0.0425;
+    private static final int loanMonthsUnder10000 = 25;
+    private static final int loanMonthsOver10000 = 48;
 
-    private boolean financeOption;
+    private boolean financeOption; // This indicates if the customer opts for financing.
 
+    // Constructor with parameters to initialize contract details including
     public SalesContract(String date, String customerName, String customerEmail, Vehicle vehicleSold, boolean financeOption) {
         super(date, customerName, customerEmail, vehicleSold);
         this.financeOption = financeOption;
     }
 
+    // Additional constructor without the finance option paramter.
     public SalesContract (String contractDate, String customerName, String customerEmail, Vehicle vehicle) {
         super(contractDate,customerName,customerEmail,vehicle);
     }
 
-
+    // Getter and setter for the finance option.
     public boolean isFinanceOption() {
         return financeOption;
     }
@@ -30,19 +33,20 @@ public class SalesContract extends Contract {
         this.financeOption = financeOption;
     }
 
+    // Override methods to calculate the total prices and monthly payments.
     @Override
     public double getTotalPrice() {
-        double totalPrice = getVehicleSold().getPrice() * (1 + SALES_TAX_RATE) + RECORDING_FEE;
+        double totalPrice = getVehicleSold().getPrice() * (1 + salesTaxRate) + recordingFee;
         if (getVehicleSold().getPrice() < 10000) {
-            totalPrice += PROCESSING_FEE_UNDER_10000;
+            totalPrice += processingFeeUnder10000;
         } else {
-            totalPrice += PROCESSING_FEE_OVER_10000;
+            totalPrice += processingFeeOver10000;
         }
         if (financeOption) {
             if (getVehicleSold().getPrice() >= 10000) {
-                totalPrice += getVehicleSold().getPrice() * LOAN_INTEREST_RATE_OVER_10000 * LOAN_MONTHS_OVER_10000;
+                totalPrice += getVehicleSold().getPrice() * loanInterestRateOver10000 * loanMonthsUnder10000;
             } else {
-                totalPrice += getVehicleSold().getPrice() * LOAN_INTEREST_RATE_UNDER_10000 * LOAN_MONTHS_UNDER_10000;
+                totalPrice += getVehicleSold().getPrice() * loanInterestRateUnder10000 * loanMonthsUnder10000;
             }
         }
         return totalPrice;
@@ -52,9 +56,9 @@ public class SalesContract extends Contract {
     public double getMonthlyPayment() {
         if (financeOption) {
             if (getVehicleSold().getPrice() >= 10000) {
-                return getTotalPrice() / LOAN_MONTHS_OVER_10000;
+                return getTotalPrice() / loanMonthsOver10000;
             } else {
-                return getTotalPrice() / LOAN_MONTHS_UNDER_10000;
+                return getTotalPrice() / loanMonthsOver10000;
             }
         } else {
             return 0.0;
