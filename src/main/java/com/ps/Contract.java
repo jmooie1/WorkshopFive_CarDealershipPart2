@@ -1,6 +1,9 @@
 package com.ps;
 
+
+// Abstract class and holds common information for all contracts.
 public abstract class Contract {
+    // Fields to store all the contract information.
     private String date;
     private String customerName;
     private String customerEmail;
@@ -8,6 +11,7 @@ public abstract class Contract {
     protected double totalPrice;
     protected double monthlyPayment;
 
+    // Constructor to initialize contract details
     public Contract(String date, String customerName, String customerEmail, Vehicle vehicleSold) {
         this.date = date;
         this.customerName = customerName;
@@ -15,6 +19,7 @@ public abstract class Contract {
         this.vehicleSold = vehicleSold;
     }
 
+    // abstract methods that are to be implemented.
     public abstract double getTotalPrice();
 
     public abstract double getMonthlyPayment();
