@@ -7,10 +7,12 @@ import java.util.Scanner;
 class UserInterface {
     private Dealership dealership; // This references to the dealership.
     private Scanner scanner; // Scanner for user input.
+    private ContractFileManager contractFileManager; // Manages contract files.
 
     // Constructor to initialize the scanner and loads the dealership.
     public UserInterface() {
         this.scanner = new Scanner(System.in); // Creates scanner object.
+        this.contractFileManager = new ContractFileManager(); // This creates the contract file manager object.
         loadDealership(); // Loads dealership from a file.
     }
 
@@ -35,6 +37,7 @@ class UserInterface {
             System.out.println("7 - List ALL vehicles");
             System.out.println("8 - Add a vehicle");
             System.out.println("9 - Remove a vehicle");
+            System.out.println("10 - Sell a Vehicle or Lease a Vehicle");
             System.out.println("99 - Quit");
 
             System.out.print("Enter your choice: ");
@@ -71,14 +74,129 @@ class UserInterface {
                     processRemoveVehicleRequest(); // Removes a vehicle form the dealership
                     saveDealershipToFile(); // Saves info after removing a vehicle
                     break;
+                case 10:
+                    processSellOrLeaseRequest(); // Checks to see if it is a sell or lease request
+                    break;
                 case 99:
                     quit = true; // Quits the program.
                     System.out.println("Exiting...");
                     break;
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println("Invalid. Try again.");
             }
         }
+    }
+
+    // A method to handle the selling or leasing a vehicle.
+    private void processSellOrLeaseRequest() {
+        // Prompt the user for VIN #.
+        System.out.println("Enter VIN of the vehicle to sell or lease: ");
+        int vin = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        // Find the vehicle in dealership inventory
+        Vehicle vehicle = dealership.findVehicleByVin(vin);
+        if (vehicle != null) {
+            // Prompt user to choose sale or lease
+            System.out.println("Is this a sale or lease? Enter 'sale' or 'lease': ");
+            String saleOrLease = scanner.nextLine();
+
+            Contract contract;
+            if ("sale".equalsIgnoreCase(saleOrLease)) {
+                contract = createSalesContract(vehicle);
+            } else if ("lease".equalsIgnoreCase(saleOrLease)) {
+                contract = createLeaseContract(vehicle);
+            } else {
+                System.out.println("Invalid option.");
+                return;
+            }
+
+            // Save contract and remove vehicle from inventory
+            saveContract(contract);
+            dealership.removeVehicle(vehicle);
+            System.out.println("Vehicle sold or leased successfully.");
+        } else {
+            System.out.println("Vehicle not found in inventory.");
+        }
+    }
+
+    // A method to create a sales contract.
+    private SalesContract createSalesContract(Vehicle vehicle) {
+        // Gather sales information from user
+        Scanner scanner = new Scanner(System.in);
+
+        // Get date of the contract (assuming it's a string)
+        System.out.println("Enter date of the contract (YYYY:MM:DD): ");
+        String contractDate = scanner.nextLine();
+
+        // Get customer name
+        System.out.println("Enter customer name: ");
+        String customerName = scanner.nextLine();
+
+        // Get customer email
+        System.out.println("Enter customer email: ");
+        String customerEmail = scanner.nextLine();
+
+        // Get financing option
+        System.out.println("Do they want to finance? (yes/no): ");
+        String financeOption = scanner.nextLine();
+
+        // Initialize monthly payment if financed
+        double financedMonthlyPayment = 0.0;
+
+        // If they want to finance, get the monthly payment
+        if (financeOption.equalsIgnoreCase("yes")) {
+            System.out.println("Enter monthly payment if financed: ");
+            financedMonthlyPayment = scanner.nextDouble();
+            scanner.nextLine(); // consume newline
+        }
+
+        // Now, create the SalesContract object
+        return new SalesContract(contractDate, customerName, customerEmail, vehicle);
+
+    }
+
+    // A method to create a lease contract.
+    private LeaseContract createLeaseContract(Vehicle vehicle) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter date of the contract (YYYY:MM:DD): ");
+        String contractDate = scanner.nextLine();
+
+        System.out.println("Enter customer name: ");
+        String customerName = scanner.nextLine();
+
+        System.out.println("Enter customer email: ");
+        String customerEmail = scanner.nextLine();
+
+        System.out.println("Enter total price: ");
+        double totalPrice = scanner.nextDouble();
+        scanner.nextLine(); // Consume newline
+
+        System.out.println("Enter monthly payment: ");
+        double monthlyPayment = scanner.nextDouble();
+        scanner.nextLine(); // Consume newline
+
+        System.out.println("Enter expected ending value: ");
+        double expectedEndingValue = scanner.nextDouble();
+        scanner.nextLine(); // Consume newline
+
+        System.out.println("Enter lease fee: ");
+        double leaseFee = scanner.nextDouble();
+        scanner.nextLine(); // Consume newline
+
+        System.out.println("Enter leasing term (in months): ");
+        int leasingTerm = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        return new LeaseContract(contractDate, customerName, customerEmail, vehicle, totalPrice,
+                monthlyPayment, expectedEndingValue, leaseFee, leasingTerm);
+    }
+
+    //A method to save a contract to the file.
+    private void saveContract(Contract contract) {
+        ContractFileManager fileManager = new ContractFileManager();
+        fileManager.saveContract(contract);
     }
 
     // Method to handle finding vehicles within a price range
